@@ -352,6 +352,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     }
 
+    // TODO Hutool-Captcha验证码生成
     @Override
     public void getCaptcha(HttpServletRequest request, HttpServletResponse response) {
         //前端必须传一个 signature 来作为唯一标识
