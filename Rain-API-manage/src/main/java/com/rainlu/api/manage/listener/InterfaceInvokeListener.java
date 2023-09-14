@@ -18,7 +18,7 @@ import static com.rainlu.api.common.constant.RabbitMQConstant.QUEUE_INTERFACE_CO
 
 /**
  * 当接口调用失败时，被调用失败的 `接口的id` 和 `当前用户的id` 会被存入队列。当前类就是监听这个队列的消费者。
- * 即：如果接口调用失败，负责回滚数据库中的的接口统计数据(`user_interface_info`)
+ * 即：如果接口调用失败，负责回滚数据库中的的接口统计数据(`user_interface_info`)（回滚接口的调用次数，给网关擦屁股）
  */
 @Component
 @Slf4j
