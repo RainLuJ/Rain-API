@@ -1,6 +1,6 @@
 package com.rainlu.api.common.model.dto.userinterface;
 
-import com.yupi.springbootinit.common.PageRequest;
+import com.rainlu.api.common.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
