@@ -27,6 +27,7 @@ import com.rainlu.api.manage.service.InterfaceChargingService;
 import com.rainlu.api.manage.service.InterfaceInfoService;
 import com.rainlu.api.manage.service.UserInterfaceInfoService;
 import com.rainlu.api.manage.service.UserService;
+import com.rainlu.api.manage.util.InvokeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -40,8 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -286,7 +285,7 @@ public class InterfaceInfoController {
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
 
-        Object res = invokeInterfaceInfo(
+        Object res = InvokeUtil.invokeInterfaceInfo(
                 interfaceInfo.getSdk(), interfaceInfo.getName(), interfaceInfo.getRequestParams(),
                 accessKey, secretKey
         );
@@ -379,7 +378,7 @@ public class InterfaceInfoController {
 
         //3.发起接口调用
         String requestParams = interfaceInfoInvokeRequest.getUserRequestParams();
-        Object res = invokeInterfaceInfo(interfaceInfo.getSdk(), interfaceInfo.getName(),
+        Object res = InvokeUtil.invokeInterfaceInfo(interfaceInfo.getSdk(), interfaceInfo.getName(),
                 requestParams, accessKey, secretKey);
         if (res == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
@@ -390,45 +389,7 @@ public class InterfaceInfoController {
         return ResultUtils.success(res);
     }
 
-    // TODO：反射调用接口
-    /**
-     * @param classPath SDK中，访问接口的`客户端类`的全限定名称，被存在接口信息表中（每个一个接口提供一个SDK-client）。
-     * @param methodName `客户端类`中提供具体接口调用服务的方法名
-     * @param userRequestParams 访问接口的请求参数
-     * @return java.lang.Object 接口的执行结果
-     * @description 使用反射调用指定的接口
-     */
-    private Object invokeInterfaceInfo(String classPath, String methodName, String userRequestParams,
-                                       String accessKey, String secretKey) {
-        try {
-            Class<?> clientClazz = Class.forName(classPath);
-            // 1. 获取`客户端类`构造器，参数为ak,sk
-            Constructor<?> binApiClientConstructor = clientClazz.getConstructor(String.class, String.class);
-            // 2. 构造出客户端：new XXXClient
-            Object apiClient = binApiClientConstructor.newInstance(accessKey, secretKey);
 
-            // 3. 找到要调用的方法：XXXClient中的方法
-            Method[] methods = clientClazz.getMethods();
-            for (Method method : methods) {
-                if (method.getName().equals(methodName)) {
-                    // 3.1 获取参数类型列表
-                    Class<?>[] parameterTypes = method.getParameterTypes();
-                    if (parameterTypes.length == 0) {
-                        // 如果没有参数，直接调用
-                        return method.invoke(apiClient);
-                    }
-                    Gson gson = new Gson();
-                    // 构造参数
-                    Object parameter = gson.fromJson(userRequestParams, parameterTypes[0]);
-                    return method.invoke(apiClient, parameter);
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "找不到调用的方法!! 请检查你的请求参数是否正确!");
-        }
-    }
 
     /**
      * @description 下载本项目中所管理的所有接口的SDK
