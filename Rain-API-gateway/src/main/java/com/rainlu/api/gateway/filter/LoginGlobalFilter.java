@@ -1,10 +1,10 @@
 package com.rainlu.api.gateway.filter;
 
 import cn.hutool.core.text.AntPathMatcher;
-import com.google.common.util.concurrent.RateLimiter;
 import com.rainlu.api.common.common.ErrorCode;
 import com.rainlu.api.common.exception.BusinessException;
 import com.rainlu.api.common.utils.JwtUtils;
+import com.rainlu.api.gateway.algo.TokenBucket;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -33,8 +33,11 @@ import java.util.stream.Collectors;
 public class LoginGlobalFilter implements GlobalFilter, Ordered {
 
 
+    /*@Resource
+    private RateLimiter rateLimiter;*/
+
     @Resource
-    private RateLimiter rateLimiter;
+    private TokenBucket tokenBucket;
 
 
     // 白名单放行
@@ -51,13 +54,13 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
         ServerHttpResponse response = exchange.getResponse();
         HttpHeaders headers = request.getHeaders();
 
-        // 限流过滤：如果可以立即毫不拖延地获得许可，则从该RateLimit获得许可。
-        if (!rateLimiter.tryAcquire()) {
+        /* 1. 限流过滤：如果可以立即毫不拖延地获得许可，则从该RateLimit获得许可。 */
+        if (!tokenBucket.tryAcquire(1)) {
             log.error("请求太频繁了，被限流了!!!");
             throw new BusinessException(ErrorCode.TOO_MANY_REQUESTS);
         }
 
-        /* 白名单放行 */
+        /* 2. 白名单放行 */
         //登录过滤
         String path = request.getPath().toString();
         //判断请求路径是否需要登录
@@ -70,7 +73,7 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        /* 没有Cookie或者Cookie没有携带Token == 未登录 */
+        /* 3. 没有Cookie或者Cookie没有携带Token == 未登录 */
         String cookie = headers.getFirst("Cookie");
         if (StringUtils.isBlank(cookie)){
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);

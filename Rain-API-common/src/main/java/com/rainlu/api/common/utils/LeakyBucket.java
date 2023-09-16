@@ -3,7 +3,7 @@ package com.rainlu.api.common.utils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 手机令牌桶算法工具类
+ * 令牌桶算法工具类
  */
 @Slf4j
 public class LeakyBucket {
