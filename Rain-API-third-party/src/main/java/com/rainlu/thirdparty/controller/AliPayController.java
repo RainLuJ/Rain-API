@@ -89,7 +89,7 @@ public class AliPayController {
         // 创建请求对象的参数模型
         AlipayTradePrecreateModel model = new AlipayTradePrecreateModel();
         // 设置支付成功之后的【异步回调接口】
-        //request.setNotifyUrl("http://www.chen-code.work:9000/api/third/alipay/notify");
+        //request.setNotifyUrl("http://www.rainlu.xyz:9000/api/third/alipay/notify");
         request.setNotifyUrl(aliPayConfig.getNotifyUrl());
         // 封装请求对象的参数模型
         model.setOutTradeNo(outTradeNo);

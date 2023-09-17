@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 /**
- * @Entity com.czq.apiorder.model.entity.Order
+ * @Entity com.rainlu.apiorder.model.entity.Order
  */
 @Mapper
 public interface TOrderMapper extends BaseMapper<Order> {
